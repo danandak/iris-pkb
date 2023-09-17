@@ -1,62 +1,36 @@
 # %%
 import pandas as pd
 
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import ComplementNB
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
 
 
 # %%
 # membuka file data latihan
-datas = pd.read_excel("datas.xlsx", sheet_name="All Labelling")
-x_train = datas['tweet']
-y_train = datas['sentimen']
+datas3 = pd.read_csv("iris.csv");
+x = datas3.iloc[:,:4]
+y = datas3.iloc[:,4]
 
-datas2 = pd.read_excel("datas.xlsx", sheet_name="20 Random")
-x_test = datas2['tweet']
-y_test = datas2['sentimen']
+# printing data untuk x dan y
+print(x)
+print()
+print(y)
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,random_state=0,test_size=0.4)
+
+# printing jumlah x_train dan y_train
+print(x_train.shape)
+print(y_train.shape)
+print(x_test.shape)
+print(y_test.shape)
+print()
 
 
 # %%
-# Pelatihan model
-pipe = Pipeline(steps=[('vect', CountVectorizer()),
-                        ('tfidf', TfidfTransformer()),
-                        ('clf', MultinomialNB())])
-
-tuned_parameters = {
-    'vect__ngram_range': [(1, 1), (1, 2), (2, 2)],
-    'tfidf__use_idf': (True, False),
-    'tfidf__norm': ('l1', 'l2'),
-    'clf__alpha': [1, 1e-1, 1e-2]
-}
-
-classifier = GridSearchCV(pipe, tuned_parameters, cv=10)
-
+# Membuat model dengan algoritma Complement Naive Bayes
+classifier = ComplementNB()
 classifier.fit(x_train, y_train) # melatih model dengan 60 data latih
-print(classification_report(y_test, classifier.predict(x_test), digits=4)) # menampilkan detail performa model
 
-# %%
-# membuka data mentah (144 data)
-datas_test = pd.read_excel("datas.xlsx", sheet_name='Test After 20')
-data2 = datas_test['tweet']
-
-# mengetes model menggunakan data uji
-prediksi = classifier.predict(data2)
-counter = 1; pos = 0; neg = 0; net = 0
-for x in prediksi:
-    # print(f'sentimen data tweet ke-{counter}\n{x}'); counter+=1
-    if x == 'Positif' :
-        pos+=1
-    elif x == 'Negatif' :
-        neg+=1
-    else:
-        net+=1
-
-print("\nJumlah masing-masing sentimen setelah diklasifikasikan : ")
-print(f"Sentimen Positif : {pos}\nSentimen Netral : {net}\nSentimen Negatif : {neg}\n")
-
-# ekspor hasil analisis ke excel
-datas_test['sentimen'] = prediksi
-datas_test.to_excel("hasil.xlsx", index=False)
+y_pred = classifier.predict(x_test) # melakukan prediksi terhadap data uji
+print('accuracy is',accuracy_score(y_pred,y_test) * 100) # menghitung akurasi
