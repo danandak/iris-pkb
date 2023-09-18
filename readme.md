@@ -1,4 +1,4 @@
-# Homework 1
+# Tugas Kelompok 2
 
 Anggota Kelompok : 
 1. Danan Danurwenda Adi Kusuma (1313621017)
